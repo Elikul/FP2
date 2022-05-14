@@ -1,0 +1,1 @@
+export { CloseModalWindow } from "./CloseModalWindow";

@@ -1,0 +1,1 @@
+export { FullScreenTab } from "./FullScreenTab";

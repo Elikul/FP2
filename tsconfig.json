@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "commonjs",
+        "jsx": "react-jsx",
+        "outDir": "./lib",
+        "strict": true,
+        "noImplicitAny": false,
+        "skipLibCheck": true,
+        "downlevelIteration": true,
+        "experimentalDecorators": true,
+        "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "noUnusedLocals": false,
+        "sourceMap": false
+    },
+    "exclude": ["**/__tests__"],
+    "include": ["src", "./test/jest-setup.ts"]
+}

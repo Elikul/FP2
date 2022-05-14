@@ -1,0 +1,39 @@
+{
+    "manifest_version": 2,
+    "name": "Инструмент тестировщика",
+    "description": "Devtools расширение для регистрации действий пользователя на тестовых стендах и генерации кода автотестов для проверки\nUI. Тестировщик также имеет возможность создать задачу в Redmine и записать видео работы, когда тестирует тестовый\nстенд.",
+    "version": "1.5",
+    "content_security_policy": "script-src 'self'; object-src 'self'",
+    "permissions": ["<all_urls>", "tabs", "activeTab", "storage", "clipboardWrite", "clipboardRead"],
+    "icons": {
+        "16": "icons/page-16.png",
+        "32": "icons/page-32.png",
+        "48": "icons/page-48.png"
+    },
+    "browser_action": {
+        "default_icon": "icons/page-16.png",
+        "default_popup": "popup.html"
+    },
+    "devtools_page": "devtools.html",
+    "background": {
+        "scripts": ["polyfill.bundle.js", "backgroundScript.bundle.js"]
+    },
+    "commands": {
+        "recordVideo": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+V",
+                "mac": "Command+Shift+V"
+            },
+            "description": "Add record window"
+        }
+    },
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "all_frames": true,
+            "js": ["polyfill.bundle.js", "contentScript.bundle.js"],
+            "run_at": "document_idle"
+        }
+    ],
+    "web_accessible_resources": ["recorderUtils.bundle.js"]
+}

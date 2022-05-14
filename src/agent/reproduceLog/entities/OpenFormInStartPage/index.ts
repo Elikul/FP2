@@ -1,0 +1,1 @@
+export { OpenFormInStartPage } from "./OpenFormInStartPage";

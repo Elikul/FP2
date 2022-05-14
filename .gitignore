@@ -1,0 +1,15 @@
+node_modules/
+chrome-extension/
+firefox-extension/
+chrome-extension.zip
+firefox-extension.zip
+lib
+.idea
+
+.yarn/*
+!.yarn/cache
+!.yarn/releases
+!.yarn/plugins
+!.yarn/patches
+!.yarn/sdks
+!.yarn/versions

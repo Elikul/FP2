@@ -1,0 +1,1 @@
+export { MinimizeTab } from "./MinimizeTab";

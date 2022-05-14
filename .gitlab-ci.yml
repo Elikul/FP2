@@ -1,0 +1,44 @@
+stages:
+  - build
+  - test
+  - release
+
+image: node:16.13.0
+
+cache:
+  paths:
+    - node_modules/
+
+buildChrome-job:
+  tags:
+    - frontend-docker
+  script:
+    - yarn
+    - yarn build-chrome
+  artifacts:
+    name: "extension"
+    paths:
+      - 'chrome-extension/'
+    expire_in: never
+
+test-job:
+  needs:
+    - buildChrome-job
+  tags:
+    - frontend-docker
+  script:
+    - yarn
+    - yarn test
+
+#release-job:
+#  stage: release
+#  tags:
+#    - frontend-docker
+#  image: registry.gitlab.com/gitlab-org/release-cli:latest
+#  script:
+#    - echo "running release_job"
+#  release:
+#    name: 'Release $CI_COMMIT_TAG'
+#    description: 'Created using the release-cli $EXTRA_DESCRIPTION'  # $EXTRA_DESCRIPTION must be defined
+#    tag_name: '$CI_COMMIT_TAG'                                       # elsewhere in the pipeline.
+#    ref: '$CI_COMMIT_TAG'

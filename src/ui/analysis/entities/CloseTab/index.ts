@@ -1,0 +1,1 @@
+export { CloseTab } from "./CloseTab";
