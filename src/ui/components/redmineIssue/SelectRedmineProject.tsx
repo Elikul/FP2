@@ -18,29 +18,37 @@ const SelectRedmineProject: FC = () => {
 
     const dispatch = useDispatch();
 
+    //действие
     useEffect(() => {
         if (!API_KEY) return;
 
         setLoading(true);
-        RedmineAPI.getAllProjects().then((newData: IInfoProject[]) => {
-            setData([...groupProjects(addProjectsChildren(newData))]);
+        RedmineAPI.getAllProjects().then((projects: IInfoProject[]) => {
+            const newData = [...groupProjects(addProjectsChildren(projects))];
+            setData(newData);
             setLoading(false);
         });
     }, [API_KEY]);
 
+    //действие
     const searchOptions = (inputValue: string) => {
-        return data.filter(i => i.label.toLowerCase().includes(inputValue.toLowerCase()));
+        //КПЗ
+        const copyData = [...data];
+        return copyData.filter(i => i.label.toLowerCase().includes(inputValue.toLowerCase()));
     };
 
+    //действие
     const loadOptions = (inputValue: string, callback: (arg0: IOption[]) => void) => {
         callback(searchOptions(inputValue));
     };
 
+    //действие
     const handleChangeProject = (options: IOption | null) => {
         setSelectedProject(options);
         dispatch(setRedmineProject(options));
     };
 
+    //действие
     const warnApi = () => {
         if (API_KEY === null) {
             toast.warn("Чтобы выбрать проект, необходимо ввести Ваш ключ доступа к API Redmine.", alertOptions);

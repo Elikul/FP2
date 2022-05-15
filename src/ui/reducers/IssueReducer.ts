@@ -9,7 +9,6 @@ import {
     removeAllAttachments,
     removeAllScreenshots,
     removeAttachmentFiles,
-    removeScreenshot,
     setApiKey,
     setGif,
     setIssueLog,
@@ -19,6 +18,7 @@ import {
     setRedmineProject,
     setMember,
     setScreenshots,
+    setScreenshot,
     setVideo,
     showLog,
     showModalCreateIssue,
@@ -73,8 +73,8 @@ const apikeyReducer = createReducer<string | null, IssueAction>(null)
     .handleAction(getApiKey, () => getApi());
 
 const screenshotsReducer = createReducer<InfoScreenshot[], IssueAction>([])
-    .handleAction(setScreenshots, (state, { payload }) => [...state, payload])
-    .handleAction(removeScreenshot, (state, { payload }) => payload)
+    .handleAction(setScreenshot, (state, { payload }) => [...state, payload])
+    .handleAction(setScreenshots, (state, { payload }) => payload)
     .handleAction(removeAllScreenshots, () => []);
 
 const showModalCreateIssueReducer = createReducer<boolean, IssueAction>(false).handleAction(

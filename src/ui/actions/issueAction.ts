@@ -8,7 +8,8 @@ import { FieldOption } from "../components/utils/getOptions";
 
 export const setApiKey = createStandardAction("SET_API_KEY")<string>();
 export const getApiKey = createStandardAction("GET_API_KEY")();
-export const setScreenshots = createStandardAction("SET_SCREENSHOTS")<InfoScreenshot>();
+export const setScreenshot = createStandardAction("SET_SCREENSHOT")<InfoScreenshot>();
+export const setScreenshots = createStandardAction("SET_SCREENSHOTS")<InfoScreenshot[]>();
 export const showModalCreateIssue = createStandardAction("SHOW_MODAL_CREATE_ISSUE")<boolean>();
 export const setIssueLog = createStandardAction("SET_ISSUE_LOG")<IUserActionType[]>();
 export const setIssueTracker = createStandardAction("SET_ISSUE_TRACKER")<FieldOption<TrackerIssue> | null>();
@@ -18,7 +19,6 @@ export const setMember = createStandardAction("SET_MEMBER")<IOption | null>();
 export const attachFiles = createStandardAction("ATTACH_FILES")<AttachFilesType>();
 export const removeAttachmentFiles = createStandardAction("REMOVE_ATTACHMENT_FILES")<AttachFilesType[]>();
 export const removeAllAttachments = createStandardAction("REMOVE_ALL_ATTACHMENTS_FILES")();
-export const removeScreenshot = createStandardAction("REMOVE_SCREENSHOT")<InfoScreenshot[]>();
 export const removeAllScreenshots = createStandardAction("REMOVE_ALL_SCREENSHOTS")();
 export const showScreenshots = createStandardAction("SHOW_SCREENSHOTS")<boolean>();
 export const showLog = createStandardAction("SHOW_LOG")<boolean>();
@@ -41,6 +41,7 @@ export type IssueAction = ActionType<
     | typeof setApiKey
     | typeof getApiKey
     | typeof setScreenshots
+    | typeof setScreenshot
     | typeof showModalCreateIssue
     | typeof setIssueLog
     | typeof setIssueTracker
@@ -51,7 +52,6 @@ export type IssueAction = ActionType<
     | typeof removeAttachmentFiles
     | typeof removeAllAttachments
     | typeof removeAllScreenshots
-    | typeof removeScreenshot
     | typeof showScreenshots
     | typeof showLog
     | typeof setVideo

@@ -96,12 +96,14 @@ export interface IOption {
  * @param projectList - все проекты
  */
 export const addProjectsChildren = (projectList: IInfoProject[]): IInfoProject[] => {
+    //КПЗ
+    const copyProjectList = [...projectList];
     const addChildren = (project: IInfoProject): IInfoProject => ({
         ...project,
-        children: projectList.filter(sub => sub.parent && project.id === sub.parent.id).map(addChildren)
+        children: copyProjectList.filter(sub => sub.parent && project.id === sub.parent.id).map(addChildren)
     });
 
-    return projectList.map(addChildren).filter(project => !project.parent); //убираем повторения проектов
+    return copyProjectList.map(addChildren).filter(project => !project.parent); //убираем повторения проектов
 };
 
 /**
@@ -125,7 +127,9 @@ const getGroup = (project: IInfoProject, level: number): IOption[] => {
  * @param level - уровень проекта
  */
 export const groupProjects = (data: IInfoProject[], level = 0): IOption[] => {
-    return data.reduce((arr: IOption[], el: IInfoProject) => {
+    //КПЗ
+    const copyData = [...data];
+    return copyData.reduce((arr: IOption[], el: IInfoProject) => {
         return [...arr, ...getGroup(el, level)];
     }, []);
 };
