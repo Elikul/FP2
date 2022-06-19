@@ -2,12 +2,13 @@ import { ToastOptions } from "react-toastify";
 import {
     IInfoProject,
     IMembership,
-    IMembershipResponse,
+    IMembershipResponse, InfoToken,
     IProjectResponse,
     OneIssueResponse,
     OneProjectResponse
 } from "./redmineTypes";
 import { REDMINE_URL } from "./RedmineAPI";
+import {IUserActionType} from "../indexedDB/indexeddb";
 
 /**
  * Опции установленные по умолчанию для toast
@@ -167,4 +168,40 @@ export const fetchTrackersPrj = async (idProject: number): Promise<OneProjectRes
  */
 export const fetchIssue = async (idIssue: number): Promise<OneIssueResponse> => {
     return fetchResponse(`${REDMINE_URL}issues/${idIssue}.json?include=attachments`);
+};
+
+/**
+ * Отправить файл
+ * @param request - запрос
+ * @param file - файл, который хотим загрузить
+ */
+export const postFile = (request:string,file:File):any => {
+    return fetch(request, {
+        method: "POST",
+        headers: getHeaders(),
+        body: file
+    }).then(response => {
+        if (!response.ok) throw Error(response.statusText);
+        return response.json();
+    })
+}
+
+/**
+ * Получить токен файла
+ * @param fileName - название файла
+ * @param file - файл
+ * @param extensionFile - расширение файла
+ */
+export const uploadOneFile =  (
+    fileName: string,
+    file: IUserActionType[] | File[] | any,
+    extensionFile: string
+): InfoToken => {
+    const response = postFile(`${REDMINE_URL}/uploads.json?filename=${fileName}`,file)
+
+    return {
+        token: response.data.upload.token,
+        filename: fileName,
+        content_type: extensionFile
+    };
 };
