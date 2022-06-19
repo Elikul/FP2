@@ -6,15 +6,13 @@ import {
     fetchProjects,
     fetchResponse,
     fetchTrackersPrj,
-    getHeaders
+    getHeaders, postFile
 } from "./utilsRedmine";
 import { IUserActionType } from "../indexedDB/indexeddb";
 import {
     IInfoProject,
     IMembership,
-    IMembershipResponse,
     InfoToken,
-    IProjectResponse,
     IssueInfo,
     StatusIssue,
     TrackerType
@@ -24,6 +22,26 @@ import { toast } from "react-toastify";
 export const REDMINE_URL: string = `https://ntp-redmine.krista.ru/`;
 const LIMIT = 100;
 
+enum Fields{
+    projects="projects",
+    memberships="memberships"
+}
+
+export const getRedmineData = async (request:Function,field:string,idProject?:number): Promise<IInfoProject[] | IMembership[]> => {
+    let offset = 0;
+    let count = 0;
+    let data: any = [];
+    let redmineData:any = await request(offset, LIMIT, idProject);
+    let totalCount = redmineData.total_count;
+    while (count < totalCount || offset === 0) {
+        redmineData = await request(offset, LIMIT,idProject);
+        count += redmineData[field].length;
+        data.push(...redmineData[field]);
+        offset += LIMIT;
+    }
+    return data;
+}
+
 /**
  * класс RedmineAPI
  */
@@ -32,36 +50,14 @@ export class RedmineAPI {
      * Отправлять запрос на получение проектов (максимум за раз можем получить 100)
      */
     static getProjects = async (): Promise<IInfoProject[]> => {
-        let offset = 0;
-        let count = 0;
-        let totalCount = 0;
-        let projects: IInfoProject[] = [];
-        while (count < totalCount || offset === 0) {
-            const data: IProjectResponse = await fetchProjects(offset, LIMIT);
-            totalCount = data.total_count;
-            count += data.projects.length;
-            projects.push(...data.projects);
-            offset += LIMIT;
-        }
-        return projects;
+        return getRedmineData(fetchProjects,Fields.projects)
     };
 
     /**
      * Отправлять запрос на получение членов проекта (максимум за раз можем получить 100)
      */
     static getMembership = async (idProject: number): Promise<IMembership[]> => {
-        let offset = 0;
-        let count = 0;
-        let totalCount = 0;
-        let membership: IMembership[] = [];
-        while (count < totalCount || offset === 0) {
-            const data: IMembershipResponse = await fetchMembership(idProject, offset, LIMIT);
-            totalCount = data.total_count;
-            count += data.memberships.length;
-            membership.push(...data.memberships);
-            offset += LIMIT;
-        }
-        return membership;
+        return getRedmineData(fetchMembership,Fields.memberships,idProject)
     };
 
     /**
@@ -87,6 +83,7 @@ export class RedmineAPI {
         return data.project.trackers;
     };
 
+
     /**
      * Получить токены картинок
      * @param base64imgs - картинка как base64
@@ -98,11 +95,7 @@ export class RedmineAPI {
             let index = base64imgs.indexOf(image);
             const file = await base64ToFile(image);
 
-            const response = await axios(`${REDMINE_URL}/uploads.json?filename=image.png`, {
-                method: "POST",
-                headers: getHeaders(),
-                data: file
-            });
+            const response = postFile(`${REDMINE_URL}/uploads.json?filename=image.png`,file)
 
             tokens.push({
                 token: response.data.upload.token,
@@ -117,19 +110,15 @@ export class RedmineAPI {
     /**
      * Получить токены файлов
      * @param fileName - название файла
-     * @param dataFile - файл
+     * @param file - файл
      * @param extensionFile - расширение файла
      */
     static uploadFile = async (
         fileName: string,
-        dataFile: IUserActionType[] | File[] | any,
+        file: IUserActionType[] | File[] | any,
         extensionFile: string
     ): Promise<InfoToken> => {
-        const response = await axios(`${REDMINE_URL}/uploads.json?filename=${fileName}`, {
-            method: "POST",
-            headers: getHeaders(),
-            data: dataFile
-        });
+        const response = postFile(`${REDMINE_URL}/uploads.json?filename=${fileName}`,file)
 
         return {
             token: response.data.upload.token,

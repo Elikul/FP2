@@ -168,3 +168,19 @@ export const fetchTrackersPrj = async (idProject: number): Promise<OneProjectRes
 export const fetchIssue = async (idIssue: number): Promise<OneIssueResponse> => {
     return fetchResponse(`${REDMINE_URL}issues/${idIssue}.json?include=attachments`);
 };
+
+/**
+ * Отправить файл
+ * @param request - запрос
+ * @param file - файл, который хотим загрузить
+ */
+export const postFile = (request:string,file:File):any => {
+    return fetch(request, {
+        method: "POST",
+        headers: getHeaders(),
+        body: file
+    }).then(response => {
+        if (!response.ok) throw Error(response.statusText);
+        return response.json();
+    })
+}
