@@ -1,4 +1,3 @@
-import axios from "axios";
 import {
     base64ToFile,
     fetchIssue,
@@ -6,7 +5,7 @@ import {
     fetchProjects,
     fetchResponse,
     fetchTrackersPrj,
-    getHeaders, postFile
+    getHeaders, uploadOneFile
 } from "./utilsRedmine";
 import { IUserActionType } from "../indexedDB/indexeddb";
 import {
@@ -18,6 +17,7 @@ import {
     TrackerType
 } from "./redmineTypes";
 import { toast } from "react-toastify";
+import {AttachFilesType} from "../ui/components/redmineIssue/AttachFiles";
 
 export const REDMINE_URL: string = `https://ntp-redmine.krista.ru/`;
 const LIMIT = 100;
@@ -47,31 +47,17 @@ export const getRedmineData = async (request:Function,field:string,idProject?:nu
  */
 export class RedmineAPI {
     /**
-     * Отправлять запрос на получение проектов (максимум за раз можем получить 100)
-     */
-    static getProjects = async (): Promise<IInfoProject[]> => {
-        return getRedmineData(fetchProjects,Fields.projects)
-    };
-
-    /**
-     * Отправлять запрос на получение членов проекта (максимум за раз можем получить 100)
-     */
-    static getMembership = async (idProject: number): Promise<IMembership[]> => {
-        return getRedmineData(fetchMembership,Fields.memberships,idProject)
-    };
-
-    /**
      * Получить все проекты
      */
     static getAllProjects = (): Promise<IInfoProject[]> => {
-        return RedmineAPI.getProjects();
+        return getRedmineData(fetchProjects,Fields.projects)
     };
 
     /**
      * Получить всех членов выбранного проекта
      */
     static getAllMembership = (idProject: number): Promise<IMembership[]> => {
-        return RedmineAPI.getMembership(idProject);
+        return getRedmineData(fetchMembership,Fields.memberships,idProject)
     };
 
     /**
@@ -88,43 +74,26 @@ export class RedmineAPI {
      * Получить токены картинок
      * @param base64imgs - картинка как base64
      */
-    static uploadScreenshot = async (base64imgs: string[]): Promise<InfoToken[]> => {
+    static uploadScreenshots = async(base64imgs: string[]): Promise<InfoToken[]> => {
         let tokens: InfoToken[] = [];
-
         for (const image of base64imgs) {
             let index = base64imgs.indexOf(image);
             const file = await base64ToFile(image);
-
-            const response = postFile(`${REDMINE_URL}/uploads.json?filename=image.png`,file)
-
-            tokens.push({
-                token: response.data.upload.token,
-                filename: `image${index}.png`,
-                content_type: "image/png"
-            });
+            uploadOneFile(`image${index}.png`,file,"image/png")
         }
 
         return tokens;
     };
 
-    /**
-     * Получить токены файлов
-     * @param fileName - название файла
-     * @param file - файл
-     * @param extensionFile - расширение файла
-     */
-    static uploadFile = async (
-        fileName: string,
-        file: IUserActionType[] | File[] | any,
-        extensionFile: string
-    ): Promise<InfoToken> => {
-        const response = postFile(`${REDMINE_URL}/uploads.json?filename=${fileName}`,file)
 
-        return {
-            token: response.data.upload.token,
-            filename: fileName,
-            content_type: extensionFile
-        };
+    /**
+     * Получить токены прикрепляемых файлов
+     * @param attachments - прикрепляемы файлы
+     */
+    static uploadAttachments =  (
+        attachments:AttachFilesType[]
+    ): InfoToken[] => {
+        return attachments.map(attach => uploadOneFile(attach.file.name, attach.file, attach.file.type))
     };
 
     /**
@@ -132,26 +101,26 @@ export class RedmineAPI {
      * @param data - информация о создаваемой задаче
      */
     static createIssue = async (data: IssueInfo) => {
-        let promises: (InfoToken | Promise<InfoToken>)[] = [
-            ...(await RedmineAPI.uploadScreenshot(data.base64imgs)),
-            RedmineAPI.uploadFile("log.json", JSON.stringify(data.log), "application/json"),
-            ...data.attachments.map(attach => RedmineAPI.uploadFile(attach.file.name, attach.file, attach.file.type))
+        let promises: (InfoToken | InfoToken[])[] = [
+            ...(await RedmineAPI.uploadScreenshots(data.base64imgs)),
+            uploadOneFile("log.json", JSON.stringify(data.log), "application/json"),
+            ...RedmineAPI.uploadAttachments(data.attachments)
         ];
 
         if (data.video) {
-            promises.push(RedmineAPI.uploadFile(data.video.name, data.video, "video/webm"));
+            promises.push(uploadOneFile(data.video.name, data.video, "video/webm"));
         }
 
         if (data.gif) {
-            promises.push(RedmineAPI.uploadFile(data.gif.name, data.gif, "image/gif"));
+            promises.push(uploadOneFile(data.gif.name, data.gif, "image/gif"));
         }
 
         const uploads = await Promise.all(promises);
 
-        return axios(`${REDMINE_URL}/issues.json`, {
+        return fetch(`${REDMINE_URL}/issues.json`, {
             method: "POST",
             headers: getHeaders("application/json;charset=utf-8"),
-            data: JSON.stringify({
+            body: JSON.stringify({
                 issue: {
                     project_id: data.projectId,
                     subject: data.subject,
